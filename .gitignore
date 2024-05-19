@@ -11,6 +11,8 @@ __pycache__/
 !/data/.gitkeep
 # always keep gitkeep files
 
+# removing react-js app 
+app/node_modules/**/
 
 # Distribution / packaging
 .Python
