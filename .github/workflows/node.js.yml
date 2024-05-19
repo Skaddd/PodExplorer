@@ -5,27 +5,44 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+    
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./app
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [20]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v4
+    - run: echo "The ${{github.repository}} has been cloned to the runner"
+    - run: echo "The workflow is now ready to test your code on the runner"
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache-dependency-path: app/package-lock.json
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
+    - name: Deploy with gh-pages
+      run: |
+        git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+        npx gh-pages -d build -u "github-actions-bot <support+actions@github.com>"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
